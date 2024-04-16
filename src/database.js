@@ -3,63 +3,87 @@ import fs from 'node:fs/promises'
 const databasePath = new URL('../db.json', import.meta.url)
 
 export class Database {
-  #database = {}
+  #database = {};
 
   constructor() {
     fs.readFile(databasePath, 'utf-8')
       .then(data => {
-        this.#database = JSON.parse(data)
+        this.#database = JSON.parse(data);
       })
       .catch(() => {
-        this.#persist()
-      })
+        this.#persist();
+      });
   }
 
   #persist() {
-    fs.writeFile(databasePath, JSON.stringify(this.#database))
+    fs.writeFile(databasePath, JSON.stringify(this.#database));
+  }
+
+  #findItem(table, id) {
+    return this.#database[table].findIndex(row => row.id === id);
   }
 
   select(table, search) {
-    let data = this.#database[table] ?? []
+    let data = this.#database[table] ?? [];
 
     if (search) {
       data = data.filter(row => {
         return Object.entries(search).some(([key, value]) => {
-          return row[key].toLowerCase().includes(value.toLowerCase())
-        })
-      })
+          return row[key].toLowerCase().includes(value.toLowerCase());
+        });
+      });
     }
 
-    return data
+    return data;
   }
 
   insert(table, data) {
     if (Array.isArray(this.#database[table])) {
-      this.#database[table].push(data)
+      this.#database[table].push(data);
     } else {
-      this.#database[table] = [data]
+      this.#database[table] = [data];
     }
 
-    this.#persist()
+    this.#persist();
 
-    return data
+    return data;
   }
 
   update(table, id, data) {
-    const rowIndex = this.#database[table].findIndex(row => row.id === id)
+    const rowIndex = this.#findItem(table, id);
 
-    if (rowIndex > -1) {
-      this.#database[table][rowIndex] = { id, ...data }
-      this.#persist()
-    }
+    if (rowIndex === -1) return;
+
+    this.#database[table][rowIndex] = {
+      ...this.#database[table][rowIndex],
+      ...data
+    };
+    this.#persist();
+  }
+
+  complete(table, id) {
+    const rowIndex = this.#findItem(table, id);
+
+    if (rowIndex === -1) return;
+
+    const item = this.#database[table][rowIndex];
+    const completed_at = !item.completed_at
+      ? new Date().toISOString()
+      : null;
+
+    this.#database[table][rowIndex] = {
+      ...item,
+      completed_at,
+    };
+    this.#persist();
   }
 
   delete(table, id) {
-    const rowIndex = this.#database[table].findIndex(row => row.id === id)
+    const rowIndex = this.#findItem(table, id);
 
-    if (rowIndex > -1) {
-      this.#database[table].splice(rowIndex, 1)
-      this.#persist()
-    }
+    if (rowIndex === -1) return;
+
+    this.#database[table].splice(rowIndex, 1);
+    this.#persist();
   }
 }
