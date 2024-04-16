@@ -11,21 +11,34 @@ export const routes = [
     handler: (req, res) => {
       const { title, description } = req.body;
 
-      const created_at = new Date().toISOString();
-      const updated_at = created_at;
+      if (title && description) {
+        const created_at = new Date().toISOString();
+        const updated_at = created_at;
 
-      const task = {
-        id: randomUUID(),
-        title,
-        description,
-        completed_at: null,
-        created_at,
-        updated_at,
-      };
+        const task = {
+          id: randomUUID(),
+          title,
+          description,
+          completed_at: null,
+          created_at,
+          updated_at,
+        };
 
-      database.insert('tasks', task);
+        database.insert('tasks', task);
 
-      return res.writeHead(201).end();
+        return res.writeHead(201).end();
+      }
+
+      const errorResponse = JSON.stringify({
+        error: {
+          title: 'Bad Request',
+          description: 'Please provide `title` and `description` fields in the request body.',
+        },
+      });
+
+      return res
+        .writeHead(400, {'Content-Type': 'application/json'})
+        .end(errorResponse);
     },
   },
   {
@@ -51,13 +64,26 @@ export const routes = [
       const { id } = req.params;
       const { title, description } = req.body;
 
-      database.update('tasks', id, {
-        ...(title && { title }),
-        ...(description && { description }),
-        updated_at: new Date().toISOString(),
+      if (title || description) {
+        database.update('tasks', id, {
+          ...(title && { title }),
+          ...(description && { description }),
+          updated_at: new Date().toISOString(),
+        });
+
+        return res.writeHead(204).end();
+      }
+
+      const errorResponse = JSON.stringify({
+        error: {
+          title: 'Bad Request',
+          description: 'Please provide `title` and/or `description` fields in the request body.',
+        },
       });
 
-      return res.writeHead(204).end();
+      return res
+        .writeHead(400, {'Content-Type': 'application/json'})
+        .end(errorResponse);
     },
   },
   {
