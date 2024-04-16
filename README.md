@@ -1,6 +1,6 @@
-# TalkBox
+# TalkBox API
 
-Bem-vindo ao TalkBox! Este é um projeto simples de API CRUD para gerenciamento de tarefas. Aqui você pode criar, ler, atualizar e excluir suas tarefas de maneira fácil e eficiente.
+Bem-vindo ao TalkBox API! Este é um projeto simples de API CRUD para gerenciamento de tarefas. Aqui você pode criar, ler, atualizar e excluir suas tarefas de maneira fácil e eficiente.
 
 ## Funcionalidades Principais
 
